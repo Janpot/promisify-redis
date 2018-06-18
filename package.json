@@ -1,6 +1,6 @@
 {
   "name": "promisify-redis",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Promisify node_redis client in a sane way",
   "main": "lib/index.js",
   "files": [
