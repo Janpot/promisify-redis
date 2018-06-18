@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 const redis = require('redis');
-const redisPromisify = require('..');
+const promisifyRedis = require('..');
 const { assert } = require('chai');
 const sinon = require('sinon');
 
@@ -36,14 +36,14 @@ describe('promisify-redis', () => {
   afterEach(() => sandbox.restore());
 
   it('should run a redis command', async () => {
-    const client = redisPromisify(createClient(redis));
+    const client = promisifyRedis(createClient(redis));
     await client.set('hello', 'world');
     const result = await client.get('hello');
     assert.strictEqual(result, 'world');
   });
 
   it('should reject on failing command', async () => {
-    const client = redisPromisify(createClient(redis));
+    const client = promisifyRedis(createClient(redis));
     try {
       await client.set('hello');
     } catch (err) {
@@ -55,7 +55,7 @@ describe('promisify-redis', () => {
   });
 
   it('should be idempotent', async () => {
-    const client = redisPromisify(redisPromisify(createClient(redis)));
+    const client = promisifyRedis(promisifyRedis(createClient(redis)));
     await client.set('hello', 'world');
     const result = await client.get('hello');
     assert.strictEqual(result, 'world');
@@ -63,7 +63,7 @@ describe('promisify-redis', () => {
 
   it('should duplicate', async () => {
     const originalClient = registerClient(redis.createClient());
-    const client = redisPromisify(originalClient).duplicate();
+    const client = promisifyRedis(originalClient).duplicate();
     registerClient(client);
     await client.set('hello', 'world');
     const result = await client.get('hello');
@@ -74,13 +74,13 @@ describe('promisify-redis', () => {
     const originalClient = registerClient(redis.createClient());
     const spy = sandbox.spy(originalClient, 'duplicate');
     const clientOptions = { db: 5 };
-    const client = redisPromisify(originalClient).duplicate(clientOptions);
+    const client = promisifyRedis(originalClient).duplicate(clientOptions);
     registerClient(client);
     assert.strictEqual(clientOptions, spy.getCall(0).args[0]);
   });
 
   it('should do multi', async () => {
-    const client = redisPromisify(createClient(redis));
+    const client = promisifyRedis(createClient(redis));
     const result = await client.multi()
       .set('hello', 'world')
       .get('hello')
@@ -90,7 +90,7 @@ describe('promisify-redis', () => {
   });
 
   it('should do batch', async () => {
-    const client = redisPromisify(createClient(redis));
+    const client = promisifyRedis(createClient(redis));
     const result = await client.batch()
       .set('hello', 'world')
       .get('hello')
@@ -101,7 +101,7 @@ describe('promisify-redis', () => {
 
   it('should promisify multi object', async () => {
     const client = createClient(redis);
-    const result = await redisPromisify(client.multi())
+    const result = await promisifyRedis(client.multi())
       .set('hello', 'world')
       .get('hello')
       .exec();
@@ -110,8 +110,8 @@ describe('promisify-redis', () => {
   });
 
   it('shouldn\'t fail on double promisified multi', async () => {
-    const client = redisPromisify(createClient(redis));
-    const result = await redisPromisify(client.multi())
+    const client = promisifyRedis(createClient(redis));
+    const result = await promisifyRedis(client.multi())
       .set('hello', 'world')
       .get('hello')
       .exec();
@@ -121,7 +121,7 @@ describe('promisify-redis', () => {
 
   it('shouldn\' alter the commands besides promisifying', async () => {
     const client = createClient(redis);
-    const promisifiedClient = redisPromisify(client);
+    const promisifiedClient = promisifyRedis(client);
     assert.strictEqual(client.set.name, promisifiedClient.set.name);
     assert.strictEqual(client.duplicate.name, promisifiedClient.duplicate.name);
     assert.strictEqual(client.multi.name, promisifiedClient.multi.name);
@@ -130,7 +130,7 @@ describe('promisify-redis', () => {
 
   it('should error on non-promisifiable targets', async () => {
     try {
-      redisPromisify(7);
+      promisifyRedis(7);
     } catch (err) {
       assert.instanceOf(err, TypeError);
       assert.propertyVal(err, 'message', 'The "client" argument must be of type RedisClient. Received type number');
@@ -141,7 +141,7 @@ describe('promisify-redis', () => {
 
   it('should error on undefined targets', async () => {
     try {
-      redisPromisify();
+      promisifyRedis();
     } catch (err) {
       assert.propertyVal(err, 'message', 'The "client" argument must be of type RedisClient. Received type undefined');
       assert.instanceOf(err, TypeError);
@@ -151,8 +151,8 @@ describe('promisify-redis', () => {
   });
 
   it('should still do pub/sub', async () => {
-    const client1 = redisPromisify(createClient(redis));
-    const client2 = redisPromisify(createClient(redis));
+    const client1 = promisifyRedis(createClient(redis));
+    const client2 = promisifyRedis(createClient(redis));
     const result = new Promise(resolve => {
       client1.once('message', (channel, message) => resolve({ channel, message }));
     });
@@ -164,7 +164,7 @@ describe('promisify-redis', () => {
   });
 
   it('should promisify the library', async () => {
-    const promisifiedRedis = redisPromisify(redis);
+    const promisifiedRedis = promisifyRedis(redis);
     const client = createClient(promisifiedRedis);
     await client.set('hello', 'world');
     const result = await client.get('hello');
@@ -172,12 +172,12 @@ describe('promisify-redis', () => {
   });
 
   it('shouldn\'t promisify the library twice', async () => {
-    const promisifiedRedis = redisPromisify(redis);
-    assert.strictEqual(promisifiedRedis, redisPromisify(promisifiedRedis));
+    const promisifiedRedis = promisifyRedis(redis);
+    assert.strictEqual(promisifiedRedis, promisifyRedis(promisifiedRedis));
   });
 
   it('should pass client options', async () => {
-    const promisifiedRedis = redisPromisify(redis);
+    const promisifiedRedis = promisifyRedis(redis);
     const spy = sandbox.spy(redis, 'createClient');
     const clientOptions = { db: 6 };
     createClient(promisifiedRedis, clientOptions);
@@ -185,6 +185,6 @@ describe('promisify-redis', () => {
   });
 
   it('should pass through library properties', async () => {
-    assert.strictEqual(redisPromisify(redis).addCommand, redis.addCommand);
+    assert.strictEqual(promisifyRedis(redis).addCommand, redis.addCommand);
   });
 });

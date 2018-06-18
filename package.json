@@ -1,8 +1,11 @@
 {
   "name": "promisify-redis",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Promisify node_redis client in a sane way",
   "main": "lib/index.js",
+  "files": [
+    "lib/*"
+  ],
   "scripts": {
     "lint": "semistandard --verbose | snazzy",
     "mocha": "mocha test",

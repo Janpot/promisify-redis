@@ -15,8 +15,8 @@ Native promises for [redis](https://www.npmjs.com/package/redis).
 Wrap the wole library:
 
 ```js
-const redisPromisify = require('promisify-redis');
-const redis = redisPromisify(require('redis'));
+const promisifyRedis = require('promisify-redis');
+const redis = promisifyRedis(require('redis'));
 
 const client = redis.createClient();
 
@@ -29,10 +29,10 @@ async function doSomething() {
 Or wrap just a single client
 
 ```js
-const redisPromisify = require('promisify-redis');
+const promisifyRedis = require('promisify-redis');
 const redis = require('redis');
 
-const client = redisPromisify(redis.createClient());
+const client = promisifyRedis(redis.createClient());
 ```
 
 ## Multi
