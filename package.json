@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "semistandard --verbose | snazzy",
     "mocha": "mocha test",
-    "test": "npm run lint && npm run mocha"
+    "test": "npm run lint && npm run mocha -- --forbid-only"
   },
   "repository": {
     "type": "git",
