@@ -5,7 +5,7 @@ const redisPromisify = require('..');
 const { assert } = require('chai');
 const sinon = require('sinon');
 
-describe('redis-promisify', () => {
+describe('promisify-redis', () => {
   const sandbox = sinon.createSandbox();
   let clients = [];
 

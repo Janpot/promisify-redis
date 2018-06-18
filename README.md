@@ -1,6 +1,6 @@
-# redis-promisify
+# promisify-redis
 
-[![Build Status](https://travis-ci.org/Janpot/redis-promisify.svg?branch=master)](https://travis-ci.org/Janpot/redis-promisify)
+[![Build Status](https://travis-ci.org/Janpot/promisify-redis.svg?branch=master)](https://travis-ci.org/Janpot/promisify-redis)
 
 Native promises for [redis](https://www.npmjs.com/package/redis).
 
@@ -15,7 +15,7 @@ Native promises for [redis](https://www.npmjs.com/package/redis).
 Wrap the wole library:
 
 ```js
-const redisPromisify = require('redis-promisify');
+const redisPromisify = require('promisify-redis');
 const redis = redisPromisify(require('redis'));
 
 const client = redis.createClient();
@@ -29,7 +29,7 @@ async function doSomething() {
 Or wrap just a single client
 
 ```js
-const redisPromisify = require('redis-promisify');
+const redisPromisify = require('promisify-redis');
 const redis = require('redis');
 
 const client = redisPromisify(redis.createClient());
