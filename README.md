@@ -12,7 +12,7 @@ Native promises for [redis](https://www.npmjs.com/package/redis).
 
 ## Usage
 
-Wrap the wole library:
+Wrap the library:
 
 ```js
 const promisifyRedis = require('promisify-redis');
