@@ -42,6 +42,18 @@ describe('redis-promisify', () => {
     assert.strictEqual(result, 'world');
   });
 
+  it('should reject on failing command', async () => {
+    const client = redisPromisify(createClient(redis));
+    try {
+      await client.set('hello');
+    } catch (err) {
+      assert.instanceOf(err, Error);
+      assert.propertyVal(err, 'message', 'ERR wrong number of arguments for \'set\' command');
+      return;
+    }
+    throw new Error('must throw');
+  });
+
   it('should be idempotent', async () => {
     const client = redisPromisify(redisPromisify(createClient(redis)));
     await client.set('hello', 'world');
@@ -159,11 +171,20 @@ describe('redis-promisify', () => {
     assert.strictEqual(result, 'world');
   });
 
+  it('shouldn\'t promisify the library twice', async () => {
+    const promisifiedRedis = redisPromisify(redis);
+    assert.strictEqual(promisifiedRedis, redisPromisify(promisifiedRedis));
+  });
+
   it('should pass client options', async () => {
     const promisifiedRedis = redisPromisify(redis);
     const spy = sandbox.spy(redis, 'createClient');
     const clientOptions = { db: 6 };
     createClient(promisifiedRedis, clientOptions);
     assert.strictEqual(clientOptions, spy.getCall(0).args[0]);
+  });
+
+  it('should pass through library properties', async () => {
+    assert.strictEqual(redisPromisify(redis).addCommand, redis.addCommand);
   });
 });

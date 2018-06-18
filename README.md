@@ -1,5 +1,7 @@
 # redis-promisify
 
+[![Build Status](https://travis-ci.org/Janpot/redis-promisify.svg?branch=master)](https://travis-ci.org/Janpot/redis-promisify)
+
 Native promises for [redis](https://www.npmjs.com/package/redis).
 
 ## Features
