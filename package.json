@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "semistandard --verbose | snazzy",
     "mocha": "mocha test",
-    "test": "npm run lint && np run mocha"
+    "test": "npm run lint && npm run mocha"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
     "mocha": "^5.2.0",
     "redis": "^2.8.0",
     "semistandard": "^12.0.1",
+    "sinon": "^6.0.0",
     "snazzy": "^7.1.1"
   },
   "dependencies": {

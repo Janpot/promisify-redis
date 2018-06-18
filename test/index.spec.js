@@ -3,8 +3,10 @@
 const redis = require('redis');
 const redisPromisify = require('..');
 const { assert } = require('chai');
+const sinon = require('sinon');
 
 describe('redis-promisify', () => {
+  const sandbox = sinon.createSandbox();
   let clients = [];
 
   function registerClient (client) {
@@ -31,6 +33,8 @@ describe('redis-promisify', () => {
     return result;
   });
 
+  afterEach(() => sandbox.restore());
+
   it('should run a redis command', async () => {
     const client = redisPromisify(createClient(redis));
     await client.set('hello', 'world');
@@ -46,10 +50,21 @@ describe('redis-promisify', () => {
   });
 
   it('should duplicate', async () => {
-    const client = await redisPromisify(createClient(redis)).duplicate();
+    const originalClient = registerClient(redis.createClient());
+    const client = redisPromisify(originalClient).duplicate();
+    registerClient(client);
     await client.set('hello', 'world');
     const result = await client.get('hello');
     assert.strictEqual(result, 'world');
+  });
+
+  it('should pass options on duplicate', async () => {
+    const originalClient = registerClient(redis.createClient());
+    const spy = sandbox.spy(originalClient, 'duplicate');
+    const clientOptions = { db: 5 };
+    const client = redisPromisify(originalClient).duplicate(clientOptions);
+    registerClient(client);
+    assert.strictEqual(clientOptions, spy.getCall(0).args[0]);
   });
 
   it('should do multi', async () => {
@@ -129,7 +144,7 @@ describe('redis-promisify', () => {
     const result = new Promise(resolve => {
       client1.once('message', (channel, message) => resolve({ channel, message }));
     });
-    client1.subscribe('foo');
+    await client1.subscribe('foo');
     await client2.publish('foo', 'bar');
     const { channel, message } = await result;
     assert.strictEqual(channel, 'foo');
@@ -142,5 +157,13 @@ describe('redis-promisify', () => {
     await client.set('hello', 'world');
     const result = await client.get('hello');
     assert.strictEqual(result, 'world');
+  });
+
+  it('should pass client options', async () => {
+    const promisifiedRedis = redisPromisify(redis);
+    const spy = sandbox.spy(redis, 'createClient');
+    const clientOptions = { db: 6 };
+    createClient(promisifiedRedis, clientOptions);
+    assert.strictEqual(clientOptions, spy.getCall(0).args[0]);
   });
 });
